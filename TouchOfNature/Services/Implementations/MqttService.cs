@@ -40,7 +40,9 @@ namespace TouchOfNature.Services.Implementations
 
             var options = new MqttClientOptionsBuilder()
                 .WithClientId("DotNetServer")
-                .WithTcpServer("192.168.1.3", 1883)
+                .WithTcpServer("e8d5854690c14c6cb14aa85f6e47a48f.s1.eu.hivemq.cloud", 8883)
+                .WithCredentials("SmartApp", "Sa12345678")
+                .WithTlsOptions(o => { o.UseTls(); })
                 .WithCleanSession()
                 .Build();
 
@@ -58,10 +60,10 @@ namespace TouchOfNature.Services.Implementations
                     var senssorsOutput = new SenssorsOutput
                     {
                         Timestamp = DateTime.Now,
-                        SoilMoisture = root.TryGetProperty("soil", out var s) ? s.GetInt32() : 0,
-                        LightDependentResistor = root.TryGetProperty("light", out var l) ? l.GetInt32() : 0,
-                        Temperature = root.TryGetProperty("temp", out var t) ? (float)t.GetDouble() : 0.0f,
-                        Humidity = root.TryGetProperty("humidity", out var h) ? (float)h.GetDouble() : 0.0f
+                        SoilMoisture = root.TryGetProperty("soil", out var s) ? s.GetInt32() : -100,
+                        LightDependentResistor = root.TryGetProperty("light", out var l) ? l.GetInt32() : -100,
+                        Temperature = root.TryGetProperty("temp", out var t) ? (float)t.GetDouble() : -100.0f,
+                        Humidity = root.TryGetProperty("humidity", out var h) ? (float)h.GetDouble() : -100.0f
                     };
 
                     using var scope = _scopeFactory.CreateScope();
