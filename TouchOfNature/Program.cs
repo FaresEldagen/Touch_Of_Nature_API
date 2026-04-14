@@ -53,8 +53,12 @@ namespace TouchOfNature
             builder.Services.Configure<AutoControlSettings>(
                 builder.Configuration.GetSection("AutoControlSettings"));
 
+            // ================= Sensor State =================
+            builder.Services.AddSingleton<ISensorStateService, SensorStateService>();
 
-
+            builder.Services.Configure<AutoControlSettings>(
+                builder.Configuration.GetSection("AutoControlSettings")
+            );
             var app = builder.Build();
 
             // Configure the HTTP request pipeline

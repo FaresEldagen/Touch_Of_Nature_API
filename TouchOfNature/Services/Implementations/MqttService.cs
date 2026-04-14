@@ -24,19 +24,23 @@ namespace TouchOfNature.Services.Implementations
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<MqttService> _logger;
         private readonly AutoControlSettings _autoSettings;
+        private readonly ISensorStateService _sensorState;
+
 
         public MqttService(
             IServiceScopeFactory scopeFactory,
             IMapper mapper,
             IHubContext<GreenhouseHub> greenhouseHub,
             ILogger<MqttService> logger,
-            IOptions<AutoControlSettings> autoSettings)
+            IOptions<AutoControlSettings> autoSettings,
+            ISensorStateService sensorState)
         {
             _scopeFactory = scopeFactory;
             _mapper = mapper;
             _greenhouseHub = greenhouseHub;
             _logger = logger;
             _autoSettings = autoSettings.Value;
+            _sensorState = sensorState;
         }
 
 

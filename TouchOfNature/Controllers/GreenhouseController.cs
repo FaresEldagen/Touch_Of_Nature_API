@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TouchOfNature.Services.Interfaces;
-using TouchOfNature.Models;
+using Microsoft.Extensions.Options;
 using TouchOfNature.DTOs;
+using TouchOfNature.Models;
+using TouchOfNature.Services.Interfaces;
 
 namespace TouchOfNature.Controllers
 {
@@ -11,10 +12,14 @@ namespace TouchOfNature.Controllers
     public class GreenhouseController : ControllerBase
     {
         private readonly IMqttService _mqtt;
+        private readonly ISensorStateService _sensorState;
+        private readonly AutoControlSettings _settings;
 
-        public GreenhouseController(IMqttService mqtt)
+        public GreenhouseController(IMqttService mqtt, ISensorStateService sensorState, IOptions<AutoControlSettings> options)
         {
             _mqtt = mqtt;
+            _sensorState = sensorState;
+            _settings = options.Value;
         }
 
         // ===== FAN =====
@@ -64,24 +69,26 @@ namespace TouchOfNature.Controllers
 
         // ===== AUTO CONTROL =====
         [HttpGet("auto/get")]
-        public async Task<IActionResult> GetAutoControlValues()
+        public IActionResult GetAutoControlValues()
         {
-            //await _mqtt.EvaluateAutoControl(request);
-            return Ok("Auto control evaluated");
+            return Ok(_settings);
         }
 
-        [HttpPost("auto/on")]
-        public async Task<IActionResult> AutoControlEnable([FromBody] AutoControlRequestDto request)
+        [HttpPost("auto-control")]
+        public IActionResult SetAutoControlState(bool Enable)
         {
-            await _mqtt.EvaluateAutoControl(request);
-            return Ok("Auto control evaluated");
+            _settings.Enabled = Enable;
+            return Ok();
         }
 
-        [HttpPost("auto/off")]
-        public async Task<IActionResult> AutoControlDisable()
+        [HttpPost("auto-update")]
+        public IActionResult UpdateAutoControlThresholds([FromBody] AutoControlRequestDto dto)
         {
-            //await _mqtt.EvaluateAutoControl(request);
-            return Ok("Auto control evaluated");
+            _settings.LightThreshold = dto.LightDependentResistor;
+            _settings.HumidityThreshold = dto.Humidity;
+            _settings.TempThreshold = dto.Temperature;
+            _settings.SoilMoistureThreshold = dto.SoilMoisture;
+            return Ok();
         }
     }
 }

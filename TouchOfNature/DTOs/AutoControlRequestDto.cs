@@ -2,7 +2,6 @@
 {
     public class AutoControlRequestDto
     {
-        public bool Enalbed { get; set; }
         public int SoilMoisture { get; set; }
         public int LightDependentResistor { get; set; }
         public float Temperature { get; set; }
