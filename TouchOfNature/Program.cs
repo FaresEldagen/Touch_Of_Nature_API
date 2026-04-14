@@ -1,3 +1,4 @@
+using TouchOfNature.Models;
 using Microsoft.EntityFrameworkCore;
 using TouchOfNature.Data;
 using TouchOfNature.Hubs;
@@ -47,6 +48,9 @@ namespace TouchOfNature
                           .AllowCredentials();
                 });
             });
+            // ================= Auto Control Settings =================
+            builder.Services.Configure<AutoControlSettings>(
+                builder.Configuration.GetSection("AutoControlSettings"));
 
 
 
