@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TouchOfNature.Migrations
 {
     /// <inheritdoc />
-    public partial class Intial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "SenssorsOutputs",
+                name: "SensorsOutputs",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -25,7 +25,7 @@ namespace TouchOfNature.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SenssorsOutputs", x => x.Id);
+                    table.PrimaryKey("PK_SensorsOutputs", x => x.Id);
                 });
         }
 
@@ -33,7 +33,7 @@ namespace TouchOfNature.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "SenssorsOutputs");
+                name: "SensorsOutputs");
         }
     }
 }

@@ -25,7 +25,7 @@ namespace TouchOfNature
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Local")));
 
             // ================= DI =================
-            builder.Services.AddScoped<ISenssorsRepo, SenssorsRepo>();
+            builder.Services.AddScoped<ISensorsRepo, SensorsRepo>();
 
             // ================= MQTT =================
             builder.Services.AddSingleton<IMqttService, MqttService>();
@@ -48,6 +48,7 @@ namespace TouchOfNature
                           .AllowCredentials();
                 });
             });
+
             // ================= Auto Control Settings =================
             builder.Services.Configure<AutoControlSettings>(
                 builder.Configuration.GetSection("AutoControlSettings"));

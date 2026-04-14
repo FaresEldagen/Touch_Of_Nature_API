@@ -4,11 +4,11 @@ using TouchOfNature.Models;
 
 namespace TouchOfNature.Mapping
 {
-    public class SennsorsProfile : Profile
+    public class SensorsProfile : Profile
     {
-        public SennsorsProfile()
+        public SensorsProfile()
         {
-            CreateMap<SenssorsOutput, SenssorsOutputUiDto>();
+            CreateMap<SensorsOutput, SensorsOutputUiDto>();
         }
     }
 }

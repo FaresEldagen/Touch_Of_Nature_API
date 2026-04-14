@@ -4,18 +4,18 @@ using TouchOfNature.Repos.Interfaces;
 
 namespace TouchOfNature.Repos.Implementations
 {
-    public class SenssorsRepo : ISenssorsRepo
+    public class SensorsRepo : ISensorsRepo
     {
         private readonly AppDbContext Context;
 
-        public SenssorsRepo(AppDbContext context)
+        public SensorsRepo(AppDbContext context)
         {
             Context = context;
         }
 
-        public async Task AddSenssorsOutput(SenssorsOutput output)
+        public async Task AddSensorsOutput(SensorsOutput output)
         {
-            Context.SenssorsOutputs.Add(output);
+            Context.SensorsOutputs.Add(output);
             await Context.SaveChangesAsync();
         }
 

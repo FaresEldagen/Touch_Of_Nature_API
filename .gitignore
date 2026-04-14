@@ -123,10 +123,7 @@ nunit-*.xml
 # ===============================
 # Environment & Secrets (IMPORTANT)
 # ===============================
-appsettings.Development.json
-appsettings.Local.json
-appsettings.json
-.env
+
 
 # ===============================
 # User Uploads & Static Assets

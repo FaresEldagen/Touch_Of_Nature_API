@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TouchOfNature.Services.Interfaces;
 using TouchOfNature.Models;
+using TouchOfNature.DTOs;
 
 namespace TouchOfNature.Controllers
 {
@@ -32,18 +33,18 @@ namespace TouchOfNature.Controllers
         }
 
         // ===== LIGHT =====
-        [HttpPost("light/on")]
+        [HttpPost("led/on")]
         public async Task<IActionResult> LightOn()
         {
-            await _mqtt.SendCommand("LIGHT_ON");
-            return Ok("Light ON sent");
+            await _mqtt.SendCommand("LED_ON");
+            return Ok("LED ON sent");
         }
 
-        [HttpPost("light/off")]
+        [HttpPost("led/off")]
         public async Task<IActionResult> LightOff()
         {
-            await _mqtt.SendCommand("LIGHT_OFF");
-            return Ok("Light OFF sent");
+            await _mqtt.SendCommand("LED_OFF");
+            return Ok("LED OFF sent");
         }
 
         // ===== PUMP =====
@@ -62,19 +63,25 @@ namespace TouchOfNature.Controllers
         }
 
         // ===== AUTO CONTROL =====
-        [HttpPost("auto")]
-        public async Task<IActionResult> AutoControl([FromBody] AutoControlRequest request)
+        [HttpGet("auto/get")]
+        public async Task<IActionResult> GetAutoControlValues()
+        {
+            //await _mqtt.EvaluateAutoControl(request);
+            return Ok("Auto control evaluated");
+        }
+
+        [HttpPost("auto/on")]
+        public async Task<IActionResult> AutoControlEnable([FromBody] AutoControlRequestDto request)
         {
             await _mqtt.EvaluateAutoControl(request);
             return Ok("Auto control evaluated");
         }
-    }
 
-    public class AutoControlRequest
-    {
-        public int SoilMoisture { get; set; }
-        public int LightDependentResistor { get; set; }
-        public float Temperature { get; set; }
-        public float Humidity { get; set; }
+        [HttpPost("auto/off")]
+        public async Task<IActionResult> AutoControlDisable()
+        {
+            //await _mqtt.EvaluateAutoControl(request);
+            return Ok("Auto control evaluated");
+        }
     }
 }

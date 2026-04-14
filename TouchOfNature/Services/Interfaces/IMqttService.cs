@@ -1,4 +1,4 @@
-﻿using TouchOfNature.Controllers;
+﻿using TouchOfNature.DTOs;
 
 namespace TouchOfNature.Services.Interfaces
 {
@@ -6,6 +6,6 @@ namespace TouchOfNature.Services.Interfaces
     {
         public Task Connect();
         public Task SendCommand(string command);
-        public Task EvaluateAutoControl(AutoControlRequest data);
+        public Task EvaluateAutoControl(AutoControlRequestDto data);
     }
 }
