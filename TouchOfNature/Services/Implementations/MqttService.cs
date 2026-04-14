@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Protocol;
 using System.Text;
 using System.Text.Json;
+using TouchOfNature.Controllers;
 using TouchOfNature.DTOs;
 using TouchOfNature.Hubs;
 using TouchOfNature.Models;
@@ -15,21 +18,29 @@ namespace TouchOfNature.Services.Implementations
     public class MqttService : IMqttService
     {
         private IMqttClient? _client;
+        private MqttClientOptions? _options;
         private readonly IMapper _mapper;
         private readonly IHubContext<GreenhouseHub> _greenhouseHub;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<MqttService> _logger;
+        private readonly AutoControlSettings _autoSettings;
+        private readonly ISensorStateService _sensorState;
+
 
         public MqttService(
-            IServiceScopeFactory scopeFactory, 
-            IMapper mapper, 
+            IServiceScopeFactory scopeFactory,
+            IMapper mapper,
             IHubContext<GreenhouseHub> greenhouseHub,
-            ILogger<MqttService> logger)
+            ILogger<MqttService> logger,
+            IOptions<AutoControlSettings> autoSettings,
+            ISensorStateService sensorState)
         {
             _scopeFactory = scopeFactory;
             _mapper = mapper;
             _greenhouseHub = greenhouseHub;
             _logger = logger;
+            _autoSettings = autoSettings.Value;
+            _sensorState = sensorState;
         }
 
 
@@ -57,7 +68,7 @@ namespace TouchOfNature.Services.Implementations
                     var root = doc.RootElement;
 
                     // Safe extraction with fallback values
-                    var senssorsOutput = new SenssorsOutput
+                    var sensorsOutput = new SensorsOutput
                     {
                         Timestamp = DateTime.Now,
                         SoilMoisture = root.TryGetProperty("soil", out var s) ? s.GetInt32() : -100,
@@ -67,15 +78,24 @@ namespace TouchOfNature.Services.Implementations
                     };
 
                     using var scope = _scopeFactory.CreateScope();
-                    var senssorsRepo = scope.ServiceProvider.GetRequiredService<ISenssorsRepo>();
-                    await senssorsRepo.AddSenssorsOutput(senssorsOutput);
+                    var sensorsRepo = scope.ServiceProvider.GetRequiredService<ISensorsRepo>();
+                    await sensorsRepo.AddSensorsOutput(sensorsOutput);
 
-                    _logger.LogInformation("Data persisted. Soil: {Soil}, Light: {Light}, Temp: {Temp}, Hum: {Hum}", 
-                        senssorsOutput.SoilMoisture, senssorsOutput.LightDependentResistor, 
-                        senssorsOutput.Temperature, senssorsOutput.Humidity);
+                    _logger.LogInformation("Data persisted. Soil: {Soil}, Light: {Light}, Temp: {Temp}, Hum: {Hum}",
+                        sensorsOutput.SoilMoisture, sensorsOutput.LightDependentResistor,
+                        sensorsOutput.Temperature, sensorsOutput.Humidity);
 
-                    var dataDto = _mapper.Map<SenssorsOutputUiDto>(senssorsOutput);
+                    var dataDto = _mapper.Map<SensorsOutputUiDto>(sensorsOutput);
                     await _greenhouseHub.Clients.All.SendAsync("ReceiveSensorData", dataDto);
+
+                    var autoRequest = new AutoControlRequestDto
+                    {
+                        SoilMoisture = sensorsOutput.SoilMoisture,
+                        LightDependentResistor = sensorsOutput.LightDependentResistor,
+                        Temperature = sensorsOutput.Temperature,
+                        Humidity = sensorsOutput.Humidity
+                    };
+                    //await EvaluateAutoControl(autoRequest);
                 }
                 catch (Exception ex)
                 {
@@ -87,8 +107,11 @@ namespace TouchOfNature.Services.Implementations
             _client.DisconnectedAsync += async e =>
             {
                 _logger.LogWarning("MQTT Disconnected. Retrying in 5 seconds...");
+
                 await Task.Delay(TimeSpan.FromSeconds(5));
-                try { await _client.ConnectAsync(options); } catch { }
+
+                try { await _client.ConnectAsync(options); } 
+                catch (Exception ex) { _logger.LogError(ex, "Reconnect failed"); }
             };
 
             await _client.ConnectAsync(options);
@@ -111,6 +134,41 @@ namespace TouchOfNature.Services.Implementations
                 .Build();
 
             await _client.PublishAsync(message);
+        }
+
+        public async Task EvaluateAutoControl(AutoControlRequestDto data)
+        {
+            if (data.LightDependentResistor < _autoSettings.LightThreshold)
+            {
+                _logger.LogInformation("Auto: Light low ({Val}), sending LED_ON", data.LightDependentResistor);
+                await SendCommand("LED_ON");
+            }
+            else
+            {
+                await SendCommand("LED_OFF");
+            }
+
+            if (data.Temperature > _autoSettings.TempThreshold ||
+                data.Humidity > _autoSettings.HumidityThreshold)
+            {
+                _logger.LogInformation("Auto: Temp={T} Hum={H}, sending FAN_ON",
+                    data.Temperature, data.Humidity);
+                await SendCommand("FAN_ON");
+            }
+            else
+            {
+                await SendCommand("FAN_OFF");
+            }
+
+            if (data.SoilMoisture < _autoSettings.SoilMoistureThreshold)
+            {
+                _logger.LogInformation("Auto: Soil dry ({Val}), sending PUMP_ON", data.SoilMoisture);
+                await SendCommand("PUMP_ON");
+            }
+            else
+            {
+                await SendCommand("PUMP_OFF");
+            }
         }
     }
 }

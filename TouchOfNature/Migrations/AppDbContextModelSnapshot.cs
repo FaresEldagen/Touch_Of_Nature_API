@@ -22,7 +22,7 @@ namespace TouchOfNature.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TouchOfNature.Models.SenssorsOutput", b =>
+            modelBuilder.Entity("TouchOfNature.Models.SensorsOutput", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -47,7 +47,7 @@ namespace TouchOfNature.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SenssorsOutputs");
+                    b.ToTable("SensorsOutputs");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,3 +1,4 @@
+using TouchOfNature.Models;
 using Microsoft.EntityFrameworkCore;
 using TouchOfNature.Data;
 using TouchOfNature.Hubs;
@@ -24,7 +25,7 @@ namespace TouchOfNature
                 options.UseSqlServer(builder.Configuration.GetConnectionString("Local")));
 
             // ================= DI =================
-            builder.Services.AddScoped<ISenssorsRepo, SenssorsRepo>();
+            builder.Services.AddScoped<ISensorsRepo, SensorsRepo>();
 
             // ================= MQTT =================
             builder.Services.AddSingleton<IMqttService, MqttService>();
@@ -48,8 +49,16 @@ namespace TouchOfNature
                 });
             });
 
+            // ================= Auto Control Settings =================
+            builder.Services.Configure<AutoControlSettings>(
+                builder.Configuration.GetSection("AutoControlSettings"));
 
+            // ================= Sensor State =================
+            builder.Services.AddSingleton<ISensorStateService, SensorStateService>();
 
+            builder.Services.Configure<AutoControlSettings>(
+                builder.Configuration.GetSection("AutoControlSettings")
+            );
             var app = builder.Build();
 
             // Configure the HTTP request pipeline

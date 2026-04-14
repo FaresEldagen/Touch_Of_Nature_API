@@ -12,8 +12,8 @@ using TouchOfNature.Data;
 namespace TouchOfNature.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260414042838_Intial")]
-    partial class Intial
+    [Migration("20260414042838_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace TouchOfNature.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TouchOfNature.Models.SenssorsOutput", b =>
+            modelBuilder.Entity("TouchOfNature.Models.SensorsOutput", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -50,7 +50,7 @@ namespace TouchOfNature.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SenssorsOutputs");
+                    b.ToTable("SensorsOutputs");
                 });
 #pragma warning restore 612, 618
         }

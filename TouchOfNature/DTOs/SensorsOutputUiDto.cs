@@ -1,6 +1,6 @@
 ﻿namespace TouchOfNature.DTOs
 {
-    public class SenssorsOutputUiDto
+    public class SensorsOutputUiDto
     {
         public int SoilMoisture { get; set; }
         public int LightDependentResistor { get; set; }

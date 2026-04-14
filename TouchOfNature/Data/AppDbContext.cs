@@ -8,6 +8,6 @@ namespace TouchOfNature.Data
         public AppDbContext(DbContextOptions options) : base(options) { }
 
 
-        public virtual DbSet<SenssorsOutput> SenssorsOutputs => Set<SenssorsOutput>();
+        public virtual DbSet<SensorsOutput> SensorsOutputs => Set<SensorsOutput>();
     }
 }
