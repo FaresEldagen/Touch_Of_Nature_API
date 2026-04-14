@@ -1,6 +1,11 @@
-﻿using MQTTnet;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
+using MQTTnet;
 using MQTTnet.Client;
 using System.Text;
+using System.Text.Json;
+using TouchOfNature.DTOs;
+using TouchOfNature.Hubs;
 using TouchOfNature.Models;
 using TouchOfNature.Repos.Interfaces;
 using TouchOfNature.Services.Interfaces;
@@ -10,11 +15,21 @@ namespace TouchOfNature.Services.Implementations
     public class MqttService : IMqttService
     {
         private IMqttClient? _client;
+        private readonly IMapper _mapper;
+        private readonly IHubContext<GreenhouseHub> _greenhouseHub;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ILogger<MqttService> _logger;
 
-        public MqttService(IServiceScopeFactory scopeFactory)
+        public MqttService(
+            IServiceScopeFactory scopeFactory, 
+            IMapper mapper, 
+            IHubContext<GreenhouseHub> greenhouseHub,
+            ILogger<MqttService> logger)
         {
             _scopeFactory = scopeFactory;
+            _mapper = mapper;
+            _greenhouseHub = greenhouseHub;
+            _logger = logger;
         }
 
 
@@ -26,59 +41,74 @@ namespace TouchOfNature.Services.Implementations
             var options = new MqttClientOptionsBuilder()
                 .WithClientId("DotNetServer")
                 .WithTcpServer("192.168.1.3", 1883)
+                .WithCleanSession()
                 .Build();
 
             _client.ApplicationMessageReceivedAsync += async e =>
             {
-                var topic = e.ApplicationMessage.Topic;
                 var payload = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment);
-
-                Console.WriteLine($"Topic: {topic}");
-                Console.WriteLine($"Data: {payload}");
+                _logger.LogInformation("MQTT Received: {Payload}", payload);
 
                 try
                 {
-                    using var doc = System.Text.Json.JsonDocument.Parse(payload);
+                    using var doc = JsonDocument.Parse(payload);
                     var root = doc.RootElement;
 
-                    SenssorsOutput senssorsOutput = new SenssorsOutput
+                    // Safe extraction with fallback values
+                    var senssorsOutput = new SenssorsOutput
                     {
                         Timestamp = DateTime.Now,
-                        SoilMoisture = root.GetProperty("soil").GetInt32(),
-                        LightDependentResistor = root.GetProperty("light").GetInt32(),
-                        Temperature = (float)root.GetProperty("temp").GetDouble(),
-                        Humidity = (float)root.GetProperty("humidity").GetDouble()
+                        SoilMoisture = root.TryGetProperty("soil", out var s) ? s.GetInt32() : 0,
+                        LightDependentResistor = root.TryGetProperty("light", out var l) ? l.GetInt32() : 0,
+                        Temperature = root.TryGetProperty("temp", out var t) ? (float)t.GetDouble() : 0.0f,
+                        Humidity = root.TryGetProperty("humidity", out var h) ? (float)h.GetDouble() : 0.0f
                     };
 
                     using var scope = _scopeFactory.CreateScope();
                     var senssorsRepo = scope.ServiceProvider.GetRequiredService<ISenssorsRepo>();
                     await senssorsRepo.AddSenssorsOutput(senssorsOutput);
 
-                    Console.WriteLine("Sensor data saved to database.");
+                    _logger.LogInformation("Data persisted. Soil: {Soil}, Light: {Light}, Temp: {Temp}, Hum: {Hum}", 
+                        senssorsOutput.SoilMoisture, senssorsOutput.LightDependentResistor, 
+                        senssorsOutput.Temperature, senssorsOutput.Humidity);
+
+                    var dataDto = _mapper.Map<SenssorsOutputUiDto>(senssorsOutput);
+                    await _greenhouseHub.Clients.All.SendAsync("ReceiveSensorData", dataDto);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error processing MQTT message: {ex.Message}");
+                    _logger.LogError(ex, "Error processing MQTT message");
                 }
             };
 
+            // Basic reconnection logic
+            _client.DisconnectedAsync += async e =>
+            {
+                _logger.LogWarning("MQTT Disconnected. Retrying in 5 seconds...");
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                try { await _client.ConnectAsync(options); } catch { }
+            };
+
             await _client.ConnectAsync(options);
-
             await _client.SubscribeAsync("greenhouse/sensors");
-
-            Console.WriteLine("MQTT Connected + Subscribed");
+            _logger.LogInformation("MQTT Connected + Subscribed to greenhouse/sensors");
         }
 
         public async Task SendCommand(string command)
         {
+            if (_client == null || !_client.IsConnected)
+            {
+                _logger.LogError("Cannot send command: MQTT client not connected.");
+                return;
+            }
+
             var message = new MqttApplicationMessageBuilder()
                 .WithTopic("greenhouse/commands")
                 .WithPayload(command)
                 .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
-                .WithRetainFlag(false)
                 .Build();
 
-            await _client!.PublishAsync(message);
+            await _client.PublishAsync(message);
         }
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TouchOfNature.Data;
+using TouchOfNature.Hubs;
 using TouchOfNature.Repos.Implementations;
 using TouchOfNature.Repos.Interfaces;
 using TouchOfNature.Services.Implementations;
@@ -9,7 +10,7 @@ namespace TouchOfNature
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,24 @@ namespace TouchOfNature
             builder.Services.AddSingleton<IMqttService, MqttService>();
             builder.Services.AddHostedService<MqttBackgroundService>();
 
+            // ================= SignalR =================
+            builder.Services.AddSignalR();
+
+            // ================= AutoMapper =================
+            builder.Services.AddAutoMapper(typeof(Program));
+            
+            // ================= CORS =================
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .SetIsOriginAllowed(_ => true)
+                          .AllowCredentials();
+                });
+            });
+
 
 
             var app = builder.Build();
@@ -40,9 +59,11 @@ namespace TouchOfNature
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("AllowAll");
             app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
+            app.MapHub<GreenhouseHub>("/hubs/greenhouse");
 
             app.Run();
         }
