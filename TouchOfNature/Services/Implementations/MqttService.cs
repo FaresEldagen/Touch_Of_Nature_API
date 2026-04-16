@@ -95,7 +95,7 @@ namespace TouchOfNature.Services.Implementations
                         Temperature = sensorsOutput.Temperature,
                         Humidity = sensorsOutput.Humidity
                     };
-                    //await EvaluateAutoControl(autoRequest);
+                    await EvaluateAutoControl(autoRequest);
                 }
                 catch (Exception ex)
                 {
@@ -138,6 +138,12 @@ namespace TouchOfNature.Services.Implementations
 
         public async Task EvaluateAutoControl(AutoControlRequestDto data)
         {
+            if (!_autoSettings.Enabled)
+            {
+                _logger.LogInformation("Auto control is disabled, skipping evaluation.");
+                return;
+            }
+
             if (data.LightDependentResistor < _autoSettings.LightThreshold)
             {
                 _logger.LogInformation("Auto: Light low ({Val}), sending LED_ON", data.LightDependentResistor);

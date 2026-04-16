@@ -22,7 +22,8 @@ namespace TouchOfNature
 
             // ================= Database =================
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("Local")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("Server")));
+                //options.UseSqlServer(builder.Configuration.GetConnectionString("Local")));
 
             // ================= DI =================
             builder.Services.AddScoped<ISensorsRepo, SensorsRepo>();
@@ -62,11 +63,13 @@ namespace TouchOfNature
             var app = builder.Build();
 
             // Configure the HTTP request pipeline
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UseSwagger();
+            //    app.UseSwaggerUI();
+            //}
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseCors("AllowAll");
             app.UseHttpsRedirection();
