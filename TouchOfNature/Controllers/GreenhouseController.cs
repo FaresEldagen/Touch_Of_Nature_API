@@ -74,14 +74,14 @@ namespace TouchOfNature.Controllers
             return Ok(_settings);
         }
 
-        [HttpPost("auto-control-enable")]
+        [HttpPut("auto-control-enable")]
         public IActionResult SetAutoControlState(bool Enable)
         {
             _settings.Enabled = Enable;
             return Ok();
         }
 
-        [HttpPost("auto-control-update")]
+        [HttpPut("auto-control-update")]
         public IActionResult UpdateAutoControlThresholds([FromBody] AutoControlRequestDto dto)
         {
             _settings.LightThreshold = dto.LightDependentResistor;

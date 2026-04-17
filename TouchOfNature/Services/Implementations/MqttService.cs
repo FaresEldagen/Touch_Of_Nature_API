@@ -136,44 +136,67 @@ namespace TouchOfNature.Services.Implementations
             await _client.PublishAsync(message);
         }
 
+
+        private bool _isLedOn;
+        private bool _isFanOn;
+        private bool _isPumpOn;
+
         public async Task EvaluateAutoControl(AutoControlRequestDto data)
         {
             if (!_autoSettings.Enabled)
             {
                 _logger.LogInformation("Auto control is disabled, skipping evaluation.");
+
+                if(_isLedOn)
+                {
+                    _isLedOn = false;
+                    await SendCommand("LED_OFF");
+                    await Task.Delay(100);
+                }
+
+                if(_isFanOn)
+                {
+                    _isFanOn = false;
+                    await SendCommand("FAN_OFF");
+                    await Task.Delay(100);
+                }
+
+                if (_isPumpOn)
+                {
+                    _isPumpOn = false;
+                    await SendCommand("PUMP_OFF");
+                    await Task.Delay(100);
+                }
                 return;
             }
 
-            if (data.LightDependentResistor < _autoSettings.LightThreshold)
+            bool shouldLedOn = data.LightDependentResistor <= _autoSettings.LightThreshold;
+            if (shouldLedOn != _isLedOn)
             {
-                _logger.LogInformation("Auto: Light low ({Val}), sending LED_ON", data.LightDependentResistor);
-                await SendCommand("LED_ON");
-            }
-            else
-            {
-                await SendCommand("LED_OFF");
+                _isLedOn = shouldLedOn;
+
+                await SendCommand(shouldLedOn ? "LED_ON" : "LED_OFF");
+                await Task.Delay(100);
             }
 
-            if (data.Temperature > _autoSettings.TempThreshold ||
-                data.Humidity > _autoSettings.HumidityThreshold)
+
+            bool shouldFanOn = (data.Temperature >= _autoSettings.TempThreshold) ||
+                (data.Humidity >= _autoSettings.HumidityThreshold);
+            if (shouldFanOn != _isFanOn)
             {
-                _logger.LogInformation("Auto: Temp={T} Hum={H}, sending FAN_ON",
-                    data.Temperature, data.Humidity);
-                await SendCommand("FAN_ON");
-            }
-            else
-            {
-                await SendCommand("FAN_OFF");
+                _isFanOn = shouldFanOn;
+
+                await SendCommand(shouldFanOn ? "FAN_ON" : "FAN_OFF");
+                await Task.Delay(100);
             }
 
-            if (data.SoilMoisture < _autoSettings.SoilMoistureThreshold)
+            bool ShoudPumpOn = data.SoilMoisture <= _autoSettings.SoilMoistureThreshold;
+            if(ShoudPumpOn != _isPumpOn)
             {
-                _logger.LogInformation("Auto: Soil dry ({Val}), sending PUMP_ON", data.SoilMoisture);
-                await SendCommand("PUMP_ON");
-            }
-            else
-            {
-                await SendCommand("PUMP_OFF");
+                _isPumpOn = ShoudPumpOn;
+
+                await SendCommand(ShoudPumpOn ? "PUMP_ON" : "PUMP_OFF");
+                await Task.Delay(100);
             }
         }
     }
