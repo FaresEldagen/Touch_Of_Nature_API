@@ -56,10 +56,12 @@ namespace TouchOfNature
 
             // ================= Sensor State =================
             builder.Services.AddSingleton<ISensorStateService, SensorStateService>();
+            builder.Services.AddScoped<ISendImageService, SendImageService>();
 
             builder.Services.Configure<AutoControlSettings>(
                 builder.Configuration.GetSection("AutoControlSettings")
             );
+            builder.Services.AddHttpClient<ISendImageService, SendImageService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline
