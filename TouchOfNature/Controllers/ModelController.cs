@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using TouchOfNature.Services.Interfaces;
 
 namespace TouchOfNature.Controllers;
@@ -13,7 +14,7 @@ public class ModelController : ControllerBase
         _sendImageService = sendImageService;
     }
 
-    [HttpPost("test")]
+    [HttpPost("predict-leaf-disease")]
     public async Task<IActionResult> Integrate(IFormFile file)
     {
         if (file == null || file.Length == 0)
@@ -29,7 +30,16 @@ public class ModelController : ControllerBase
 
         if (!allowedContentTypes.Contains(file.ContentType))
             return BadRequest("Invalid image content type");
-         var result = await _sendImageService.SendImageAsync(file); 
-        return Ok(result);
+
+        var result = await _sendImageService.SendImageAsync(file);
+
+        var jsonElement = JsonSerializer.Deserialize<JsonElement>(result);
+
+        var prettyJson = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        return Ok(prettyJson);
     }
 }

@@ -25,7 +25,7 @@ namespace TouchOfNature.Services.Implementations
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(image.ContentType);
 
             content.Add(fileContent, "file", image.FileName);
-            var response = await _client.PostAsync("http://127.0.0.1:8000/predict", content);
+            var response = await _client.PostAsync("https://rise-elevator-passage.ngrok-free.dev/predict", content);
 
             return await response.Content.ReadAsStringAsync();
 
