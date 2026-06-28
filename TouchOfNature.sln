@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35931.197 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TouchOfNature", "TouchOfNature\TouchOfNature.csproj", "{7D5F3503-674C-4C93-BAD2-6800ADD80CA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TouchOfNature", "TouchOfNature.csproj", "{EEBC37CA-0E4E-007D-11AC-267F30EC608E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7D5F3503-674C-4C93-BAD2-6800ADD80CA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D5F3503-674C-4C93-BAD2-6800ADD80CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D5F3503-674C-4C93-BAD2-6800ADD80CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D5F3503-674C-4C93-BAD2-6800ADD80CA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEBC37CA-0E4E-007D-11AC-267F30EC608E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEBC37CA-0E4E-007D-11AC-267F30EC608E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEBC37CA-0E4E-007D-11AC-267F30EC608E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEBC37CA-0E4E-007D-11AC-267F30EC608E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {19818052-72B4-4911-BA6D-9AE0FAE051FC}
+		SolutionGuid = {01B4C9BF-5C19-4DB2-91A4-B0716887B85F}
 	EndGlobalSection
 EndGlobal
